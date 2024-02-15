@@ -57,12 +57,12 @@ const postLogin=async(req,res)=>{
    if(user.length>0){
     const user1=user[0];
     if(user1.password == password){
-        res.status(201).json({error: 'Login Sucessfull'});
+        res.status(201).send('Login Sucessfull');
     }else{
-        res.status(401).json({error:'invalid password'});
+        res.status(401).json({error:'User not authorized'});
     }
    }else{
-    res.status(401).json({error: 'invalid User'});
+    res.status(401).json({error: 'User not found'});
    }
   }catch(error){
     console.error(error);
