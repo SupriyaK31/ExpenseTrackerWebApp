@@ -32,8 +32,8 @@ const postSignup= async(req,res)=>{
         }).then((result)=>{
             console.log(result);
             console.log('Signup Successful');
-             res.status(201).json(result);
-            // res.redirect('/login');
+            //  res.status(201).json(result);
+             res.redirect('/login');
         }).catch((err)=>{
             if(err instanceof Sequelize.UniqueConstraintError){
                 res.status(400).json({ err: 'Email already exists' });
@@ -46,8 +46,33 @@ const postSignup= async(req,res)=>{
     } 
 };
 
+const postLogin=async(req,res)=>{
+   const { email,password}=req.body;
+  try{
+   const user= await User.findAll({
+    where:{
+        email,
+    },
+   })
+   if(user.length>0){
+    const user1=user[0];
+    if(user1.password == password){
+        res.status(201).json({error: 'Login Sucessfull'});
+    }else{
+        res.status(401).json({error:'invalid password'});
+    }
+   }else{
+    res.status(401).json({error: 'invalid User'});
+   }
+  }catch(error){
+    console.error(error);
+    res.status(500).json({error:'Internal Server Error'});
+
+  }
+};
 module.exports={
     getIndex,
     getLogin,
-    postSignup
+    postSignup,
+    postLogin
 }
