@@ -57,7 +57,7 @@ async function chkUser(event){
        }
    await axios.post('http://localhost:3000/Login',data).then((result)=>{
         console.log(result);
-        console.log('Login successfull');
+        alert('Login successfull');
     }).catch((error)=>console.log(error));
     }
 
