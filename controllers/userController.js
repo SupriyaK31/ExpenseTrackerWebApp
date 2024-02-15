@@ -1,7 +1,7 @@
 const User=require('../models/user');
 const {Sequelize}=require('sequelize');
 const path=require('path');
-
+const bcrypt=require('bcrypt');
 const getIndex=(req,res)=>{
     res.sendFile(path.join(__dirname,'../','views','Signup.html'));
 };
@@ -25,22 +25,25 @@ const postSignup= async(req,res)=>{
         if(isstringValidator(name) || isstringValidator(email) || isstringValidator(password)){
             return res.status(400).json({err:'bad Paramets. Something is missing'})
         }
-        const user= await User.create({
-            name:name,
-            email:email,
-            password:password
-        }).then((result)=>{
-            console.log(result);
-            console.log('Signup Successful');
-            //  res.status(201).json(result);
-             res.redirect('/login');
-        }).catch((err)=>{
-            if(err instanceof Sequelize.UniqueConstraintError){
-                res.status(400).json({ err: 'Email already exists' });
-            }else{
-                res.status(500).json({ err: 'Internal Server Error' });
-            }
+        const saltround=10;
+        bcrypt.hash(password,saltround,async(err,hash)=>{
+             console.log(err);
+             await User.create({name,email,password:hash})
+             .then((result)=>{
+                console.log(result);
+                console.log('Signup Successful');
+                //  res.status(201).json(result);
+                 res.redirect('/login');
+            })       
+            //  .catch((error)=>{
+            //     if(error instanceof Sequelize.UniqueConstraintError){
+            //         res.status(400).json({ err: 'Email already exists' });
+            //     }else{
+            //         res.status(500).json({ err: 'Internal Server Error' });
+            //     }
+            // })
         })
+
     }catch(err){
         console.log(err);
     } 
@@ -55,12 +58,13 @@ const postLogin=async(req,res)=>{
     },
    })
    if(user.length>0){
-    const user1=user[0];
-    if(user1.password == password){
-        res.status(201).send('Login Sucessfull');
-    }else{
-        res.status(401).json({error:'User not authorized'});
-    }
+    bcrypt.compare(password,user[0].password,(err,result)=>{
+        if(!err){
+            res.status(201).send('Login Sucessfull');
+        }else{
+            res.status(401).json({error:'User not authorized'});
+        }
+    })
    }else{
     res.status(401).json({error: 'User not found'});
    }
