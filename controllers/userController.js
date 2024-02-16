@@ -1,4 +1,5 @@
 const User=require('../models/user');
+const Expense=require('../models/expenseModel');
 const {Sequelize}=require('sequelize');
 const path=require('path');
 const bcrypt=require('bcrypt');
@@ -9,7 +10,9 @@ const getIndex=(req,res)=>{
 const getLogin=(req,res)=>{
     res.sendFile(path.join(__dirname,'../','views','login.html'));
 };
-
+const expensePage=(req,res)=>{
+ res.sendFile(path.join(__dirname,'../','views','index.html'));
+};
 function isstringValidator(string){
     if(string =='undefine' || string.length===0){
         return true;
@@ -60,7 +63,7 @@ const postLogin=async(req,res)=>{
    if(user.length>0){
     bcrypt.compare(password,user[0].password,(err,result)=>{
         if(!err){
-            res.status(201).send('Login Sucessfull');
+           res.redirect('/expense');
         }else{
             res.status(401).json({error:'User not authorized'});
         }
@@ -74,9 +77,41 @@ const postLogin=async(req,res)=>{
 
   }
 };
+const addExpense= async(req,res)=>{
+    try{
+        const amount = req.body.amount;
+        console.log(req.body);
+        const description = req.body.description;
+        const category=req.body.category;
+       await Expense.create({amount,description,category}).then((result)=>{
+        console.log(result);
+        res.status(201).json({err: 'expense added '});
+       }).catch((err)=>{
+        res.status(402).json('Not Found');
+       })
+    }catch(error){
+        console.error(error);
+        res.status(500).json('internal server issue');
+    }
+};
+const getExpenseList= async(req,res)=>{
+    try{
+        const expenses=await Expense.findAll();
+        // console.log(expenses);
+        res.json(expenses);
+        // console.log(expenses);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+}
 module.exports={
     getIndex,
     getLogin,
     postSignup,
-    postLogin
+    postLogin,
+    expensePage,
+    addExpense,
+    getExpenseList
 }
