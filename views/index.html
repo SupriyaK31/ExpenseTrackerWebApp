@@ -12,21 +12,21 @@
     <header id="main-header" class="bg-info text-center p-4 mb-3">
         <h1>Expense Tracker</h1>
     </header>
-    <form id="my-form" class="form-inline mb-3">
+    <form id="my-form" onsubmit="onSubmit(event)" class="form-inline mb-3">
     <div class="container">
         <div class="msg"></div>
         <div class="row g-4">
-          <div class="col-mb-4">
+          <div class="col-md-4">
             <label>Expense Amount:</label>
-          <input type="text" id="amount" name="amount">
+          <input type="number" id="amount" name="amount">
           </div>
-          <div class="col-mb-4">
+          <div class="col-md-4">
             <label>Expense Description:</label>
-            <input type="text" id="Description" name="Description">
+            <input type="text" class="" id="Description" name="Description">
           </div>
-          <div class="col-mb-4">
+          <div class="col-md-4">
             <label>Category:</label>
-            <select id="SelectCat" name="Category">
+            <select id="SelectCat" class="form-select" name="Category">
                 <option value="">Select Category</option>
                 <option value="Movie">Movie</option>
                 <option value="Food">Food</option>
@@ -35,8 +35,8 @@
                 <option value="Other">Other</option>
             </select>
           </div>
-          <div class="col-mb-4">
-            <input type="submit" class="btn-secondary" id="btn" onclick="onSubmit(event)" >
+          <div class="col-md-4">
+            <input type="submit" class="btn btn-secondary" id="btn" >
            </div>
         </div>
     </div>
@@ -50,44 +50,75 @@
       const AmountIN = document.querySelector('#amount');
       const Description = document.querySelector('#Description');
       const Category = document.querySelector('#SelectCat');
-      const ExpenseList = document.querySelector('#Expense');
+      const expenseList = document.querySelector('#Expense-list');
       const msg = document.querySelector('.msg');
       
-      myForm.addEventListener('submit',onSubmit);
+    //   myForm.addEventListener('submit',onSubmit);
 document.addEventListener('DOMContentLoaded',async()=>{
   await loadExpense();
 });
 
 async function loadExpense(){
   try{
+    const token=localStorage.getItem('token');
     const ExpenseList = document.getElementById('Expense-list');
-  const response = await axios.get('http://localhost:3000/showExpense');
-  // console.log(response);
- response.data.forEach(element => {
+  await axios.get('http://localhost:3000/showExpense',{ headers:{"Authorization": token}})
+  .then(response=>{
+    response.data.expenses.forEach(element => {
   const li=document.createElement('li');
-  li.appendChild(document.createTextNode(`${element.id}-${element.amount}-${element.description}-${element.category}`));
+  li.appendChild(document.createTextNode(`${element.Amount}-${element.description}-${element.category}`));
+  
+  const delButton=document.createElement('button');
+  delButton.textContent='Delete';
+  delButton.className='btn btn-danger';
+  delButton.addEventListener('click', () => deleteExpense(element.id)); 
+  li.appendChild(delButton);
   ExpenseList.appendChild(li);
  });
+  })
+  // console.log(response);
+
 
   } catch (error) {
     console.error(error);
   }
 }
-async function onSubmit(event){
-          event.preventDefault();
-          const amount=AmountIN.value;
-          const description=Description.value;
-        const category=Category.value;
+async function onSubmit(e){
+          e.preventDefault();
+          const userId=localStorage.getItem('token');
           const addData={
-            amount,
-            description,
-            category
+            Amount: e.target.amount.value,
+            description: e.target.Description.value,
+            category: e.target.SelectCat.value,
+            userId:userId
           }
           console.log(addData);
-          const expenseList= await axios.post('http://localhost:3000/addExpense',addData).then((result)=>{
-            loadExpense();
-          }).catch(error=> console.log(error));
+          try {
+        const response = await axios.post('http://localhost:3000/addExpense', addData);
+        const ExpenseList = document.getElementById('Expense-list');
+        while (ExpenseList.firstChild) {
+            ExpenseList.removeChild(ExpenseList.firstChild);
+        }
+        await loadExpense();
+    } catch (error) {
+        console.log(error);
+    }
       }
+
+    async function deleteExpense(expenseId){
+      try{
+        await axios.delete(`http://localhost:3000/delExpense/${expenseId}`);
+        const ExpenseList = document.getElementById('Expense-list');
+        while (ExpenseList.firstChild) {
+            ExpenseList.removeChild(ExpenseList.firstChild);
+        }
+        await loadExpense();
+      
+        
+      }catch(error){
+        console.error();
+      }
+    }
     </script>
 </body>
 </html>
