@@ -18,11 +18,11 @@ function isstringValidator(string){
 
 const addExpense= async(req,res)=>{
     try{
-        const amount = req.body.amount;
-        console.log(req.body);
+        const Amount = req.body.Amount;
+        console.log("req.body"+Amount);
         const description = req.body.description;
         const category=req.body.category;
-       await Expense.create({amount,description,category}).then((result)=>{
+       await Expense.create({Amount,description,category}).then((result)=>{
         console.log(result);
         res.status(201).json({err: 'expense added '});
        }).catch((err)=>{
@@ -35,9 +35,9 @@ const addExpense= async(req,res)=>{
 };
 const getExpenseList= async(req,res)=>{
     try{
-        const expenses=await Expense.findAll();
-        // console.log(expenses);
-        res.json(expenses);
+        await Expense.findAll({ where: {userId: req.user.id}}).then(expenses=>{
+            return res.status(200).json({expenses,sucess:true});
+        }).catch(err=>{console.log(err);})
         // console.log(expenses);
     } catch (error) {
       console.error(error);
@@ -45,8 +45,27 @@ const getExpenseList= async(req,res)=>{
     }
 
 }
+
+const delExpense=async(req,res)=>{
+    const expenseId = req.params.id;
+    // console.log('expenseID:'+ expenseId);
+    try{
+        const expense= await Expense.findByPk(expenseId);
+        // console.log(expense);
+        if(!expense){
+            return res.status(404).json({error:'Expense not Found'});
+        }
+        await expense.destroy();
+        res.status(201).json({message:'Expense deleted sucessfully'});
+
+    }catch(error){
+        res.status(500).json({error:'Internal Server Error'});
+    }
+    
+};
 module.exports={
     expensePage,
     addExpense,
-    getExpenseList
+    getExpenseList,
+    delExpense
 }
