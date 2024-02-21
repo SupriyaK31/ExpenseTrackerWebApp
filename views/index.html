@@ -14,7 +14,10 @@
     </header>
     <form id="my-form" onsubmit="onSubmit(event)" class="form-inline mb-3">
     <div class="container">
-        <div class="msg"></div>
+        <div class="msg">
+          <input type="text" id="userid" name="userid" hidden>
+          
+        </div>
         <div class="row g-4">
           <div class="col-md-4">
             <label>Expense Amount:</label>
@@ -37,10 +40,13 @@
           </div>
           <div class="col-md-4">
             <input type="submit" class="btn btn-secondary" id="btn" >
+
            </div>
         </div>
     </div>
 </form>
+<button class="btn btn-primary" id="rzp-button">buy premium</button>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <ul id="Expense-list" class="list-group">
   </ul>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -51,7 +57,7 @@
       const Description = document.querySelector('#Description');
       const Category = document.querySelector('#SelectCat');
       const expenseList = document.querySelector('#Expense-list');
-      const msg = document.querySelector('.msg');
+      const userid = document.querySelector('#userid');
       
     //   myForm.addEventListener('submit',onSubmit);
 document.addEventListener('DOMContentLoaded',async()=>{
@@ -74,6 +80,7 @@ async function loadExpense(){
   delButton.addEventListener('click', () => deleteExpense(element.id)); 
   li.appendChild(delButton);
   ExpenseList.appendChild(li);
+  userid.value=element.userId;
  });
   })
   // console.log(response);
@@ -85,7 +92,8 @@ async function loadExpense(){
 }
 async function onSubmit(e){
           e.preventDefault();
-          const userId=localStorage.getItem('token');
+          const userId=userid.value;
+          console.log("userID"+userId)
           const addData={
             Amount: e.target.amount.value,
             description: e.target.Description.value,
@@ -118,6 +126,28 @@ async function onSubmit(e){
       }catch(error){
         console.error();
       }
+    }
+    document.getElementById('rzp-button').onclick= async function (e){
+      const token=localStorage.getItem('token');
+      const response=await axios.get('http://localhost:3000/purchase/premimummember',{ headers:{"Authorization": token}});
+      var options={
+        "key": response.data.key_id,
+        "order_id":response.data.order_id,
+        "handler": async function(response){
+          await axios.post('http://localhost:3000/purchase/updatetransactionstatus',{
+            order_id:options.order_id,
+            payment_id:response.razorpay_payment_id,
+          },{ headers:{"Authorization": token}})
+          alert('You are a Premium Member now');
+        }
+      };
+      const rzp1=new razorpay(options);
+      rzp1.open();
+      e.preventDefault();
+      rzp1.on('payment failed',function (response){
+        console.log(response);
+        alert('something is wrong');
+      })
     }
     </script>
 </body>
