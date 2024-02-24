@@ -19,6 +19,11 @@ password:{
     type:Sequelize.STRING
 },
 ispremiumuser:Sequelize.BOOLEAN,
+totalExpenses:{
+    type:Sequelize.INTEGER,
+    defaultValue:0
+}
+
 });
 
 module.exports=User;
