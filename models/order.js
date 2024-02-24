@@ -11,7 +11,8 @@ const Order=sequelize.define('order',{
     },
     paymentid:Sequelize.STRING,
     orderid:Sequelize.STRING,
-    status:Sequelize.STRING
+    status:Sequelize.STRING,
+    
 })
-
+sequelize.sync();
 module.exports=Order;

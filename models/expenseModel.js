@@ -9,7 +9,7 @@ id:{
     primaryKey:true
 },
 Amount:{
-    type:Sequelize.STRING,
+    type:Sequelize.INTEGER,
 },
 description:{
     type:Sequelize.STRING,
