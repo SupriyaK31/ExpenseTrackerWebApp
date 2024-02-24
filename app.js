@@ -2,6 +2,7 @@ const express=require('express');
 const sequelize=require('./utils/database');
 const userRoutes=require('./routes/userRoute');
 const purchaseRoutes=require('./routes/purchaseRoutes');
+const expenseRoutes=require('./routes/expenseRoute');
 const cors = require('cors');
 const app=express();
 const PORT=3000;
@@ -15,7 +16,7 @@ app.use(express.json());
 
 app.use(userRoutes);
 app.use(purchaseRoutes);
-
+app.use(expenseRoutes);
 User.hasMany(Expense);
 Expense.belongsTo(User);
 
