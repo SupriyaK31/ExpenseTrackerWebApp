@@ -4,6 +4,8 @@ const {Sequelize}=require('sequelize');
 const path=require('path');
 const bcrypt=require('bcrypt');
 const jwt=require('jsonwebtoken');
+const sequelize = require('../utils/database');
+
 const getIndex=(req,res)=>{
     res.sendFile(path.join(__dirname,'../','views','Signup.html'));
 };
@@ -11,8 +13,8 @@ const getIndex=(req,res)=>{
 const getLogin=(req,res)=>{
     res.sendFile(path.join(__dirname,'../','views','login.html'));
 };
-function generateToken(id,name){
-    return jwt.sign({userId:id, name:name},'98789d8cedf9');
+function generateToken(id,name,ispremiumuser){
+    return jwt.sign({userId:id, name:name, ispremiumuser},'98789d8cedf9');
 }
 function isstringValidator(string){
     if(string =='undefine' || string.length===0){
@@ -36,16 +38,8 @@ const postSignup= async(req,res)=>{
              .then((result)=>{
                 console.log(result);
                 console.log('Signup Successful');
-                //  res.status(201).json(result);
-                 res.redirect('/login');
+                  res.status(201).json(result);
             })       
-            //  .catch((error)=>{
-            //     if(error instanceof Sequelize.UniqueConstraintError){
-            //         res.status(400).json({ err: 'Email already exists' });
-            //     }else{
-            //         res.status(500).json({ err: 'Internal Server Error' });
-            //     }
-            // })
         })
 
     }catch(err){
@@ -64,7 +58,7 @@ const postLogin=async(req,res)=>{
    if(user.length>0){
     bcrypt.compare(password,user[0].password,(err,result)=>{
         if(!err){
-           return res.status(200).json({message:'login Sucessful',token: generateToken(user[0].id,user[0].name)});
+           return res.status(200).json({message:'login Sucessful',token: generateToken(user[0].id,user[0].name,user[0].ispremiumuser)});
         //    res.redirect('/expense');
         }else{
             res.status(401).json({error:'User not authorized'});
@@ -79,10 +73,33 @@ const postLogin=async(req,res)=>{
 
   }
 };
+const getAllUserExpense=async(req,res)=>{
+    try{
+        const userLeaderBoardDetails=await User.findAll({
+            attributes: ['id', 'name', [sequelize.fn('coalesce',sequelize.fn('sum', sequelize.col('expenses.Amount')),0), 'totalCost']],
+            include:[
+                {
+                    model:Expense,
+                    attributes:[],
+                }
+            ],
+            group:['user.id'],
+            order: [[sequelize.col("totalCost"), "DESC"]]
+        })
+        console.log(userLeaderBoardDetails);
+        userLeaderBoardDetails.sort((a,b)=>b.totalCost-a.totalCost);
+        res.status(200).json(userLeaderBoardDetails);
+    }catch(error){
+        res.status(500).json(error);
+        throw new Error(error);
+    }
 
+};
 module.exports={
     getIndex,
     getLogin,
     postSignup,
     postLogin,
+    generateToken,
+    getAllUserExpense
   }
