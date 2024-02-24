@@ -45,7 +45,6 @@
 <script>
 const myform=document.getElementById('myform');
     myform.addEventListener('submit',chkUser);
-
 async function chkUser(event){
        const email=event.target.email.value;
        const password=event.target.password.value;
@@ -54,7 +53,7 @@ async function chkUser(event){
         password
        }
    await axios.post('http://localhost:3000/Login',data).then((response)=>{
-        console.log(response.data);
+        console.log(response.data.token);
         localStorage.setItem('token', response.data.token);
         window.location.href="/expense";
         alert('Login successfull');

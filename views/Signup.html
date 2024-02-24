@@ -62,8 +62,9 @@
         name:name,
         email:email,
         password:password
-    }).then(()=>{
+    },).then(()=>{
         console.log('Sign up successfull');
+        window.location.href="/login";
     }).catch((err)=>console.log(error));
     }
 
