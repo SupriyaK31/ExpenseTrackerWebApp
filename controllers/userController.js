@@ -95,11 +95,19 @@ const getAllUserExpense=async(req,res)=>{
     }
 
 };
+const getForgetPassword=(req,res)=>{
+    res.sendFile(path.join(__dirname,'../','views','forgetPass.html'));
+};
+const postForgetPassword=(req,res)=>{
+    res.status(200).json({message : 'sucessfully submited'})
+};
 module.exports={
     getIndex,
     getLogin,
     postSignup,
     postLogin,
     generateToken,
-    getAllUserExpense
+    getAllUserExpense,
+    getForgetPassword,
+    postForgetPassword
   }
