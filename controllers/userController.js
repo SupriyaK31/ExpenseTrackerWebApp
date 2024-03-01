@@ -9,7 +9,7 @@ const sequelize = require('../utils/database');
 const getIndex=(req,res)=>{
     res.sendFile(path.join(__dirname,'../','views','Signup.html'));
 };
-
+//
 const getLogin=(req,res)=>{
     res.sendFile(path.join(__dirname,'../','views','login.html'));
 };
@@ -95,12 +95,22 @@ const getAllUserExpense=async(req,res)=>{
     }
 
 };
-const getForgetPassword=(req,res)=>{
-    res.sendFile(path.join(__dirname,'../','views','forgetPass.html'));
-};
-const postForgetPassword=(req,res)=>{
-    res.status(200).json({message : 'sucessfully submited'})
-};
+
+const downloadFile=async(req,res)=>{
+try{    
+    const isPrime= await User.findOne({ where: { id: req.user.id } });
+    if(isPrime.ispremiumuser==false){
+       return res.status(401).json({Error:'Unauthorized user'});
+    }else{
+        const expense=Expense.findAll({ where: { id: req.user.id } });
+
+              return res.status(202).json({message:expense});
+    }
+
+}catch(error){
+    console.log(error);
+}
+}
 module.exports={
     getIndex,
     getLogin,
@@ -108,6 +118,5 @@ module.exports={
     postLogin,
     generateToken,
     getAllUserExpense,
-    getForgetPassword,
-    postForgetPassword
+    downloadFile
   }
