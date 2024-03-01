@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <title>Expense Tracker-Report</title>
+</head>
+
+<body>
+    <header id="main-header" class="bg-info text-center p-4 mb-3">
+        <h1>Day to Day Expenses</h1>
+    </header>
+    <form id="my-form" class="form-inline mb-3">
+    <div class="container">
+        <div id="date"> 
+
+        </div>
+        <hr>
+        <button class="btn btn-info text-center" >Download report</button> 
+        <hr>
+        <h1 class="text-center">Weekly report</h1>
+        <table class="table table-striped table-hover">
+            <thead>
+                <th>Month</th>
+                <th>Income</th>
+                <th>Expense</th>
+                <th>Saving</th>
+            </thead>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <hr>
+    <h1 class="text-center">Yearly report</h1>
+    <div class="container">
+        <div id="date">  
+        </div>
+        <hr>
+        <hr>
+        <table class="table table-striped table-hover">
+            <thead>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Income</th>
+                <th>Expense</th>
+            </thead>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    </form>
+
+<div id="BtnSection">
+
+</div>
+<!-- <button class="btn btn-info" id="leaderBoardBtn">Show LeaderBoard</button> -->
+
+<div class="container">
+  <div class="row g-4">
+    <div class="col-md-6">
+      <ul id="Expense-list" class="list-group" style="width: 500px;">
+      </ul>
+    </div>
+    <div class="col-md-6">
+      <ul id="leaderBoard" class="list-group" style="width: 500px;">
+
+      </ul>
+    </div>
+  </div>
+</div>
+<script>
+      var now = new Date();
+  var datetime = now.toLocaleString();
+
+    document.getElementById('date').innerHTML=now;
+</script>
