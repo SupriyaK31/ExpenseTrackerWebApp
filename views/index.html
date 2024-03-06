@@ -46,6 +46,7 @@
 <hr>
 <div id="BtnSection">
 <button class="btn btn-info" id="rzp-button">buy premium</button>
+<button onclick="download()" class="btn btn-info" id="downloadexpense">Download File</button>
 </div>
 <!-- <button class="btn btn-info" id="leaderBoardBtn">Show LeaderBoard</button> -->
 <hr>
@@ -55,6 +56,9 @@
     <div class="col-md-6">
       <ul id="Expense-list" class="list-group" style="width: 500px;">
       </ul>
+      <ul id="pagination-container">
+
+      </ul>
     </div>
     <div class="col-md-6">
       <ul id="leaderBoard" class="list-group" style="width: 500px;">
@@ -62,6 +66,11 @@
       </ul>
     </div>
   </div>
+</div>
+<div class="container" >
+<ul id="downloadedFile" class="list-group">
+
+</ul>
 </div>
 
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -95,44 +104,103 @@ document.addEventListener('DOMContentLoaded',async()=>{
           document.getElementById('rzp-button').style.visibility='hidden';
           document.getElementById('msg').innerHTML='You are a Premium Member';
           ShowLeaderBoard();
+          ShowLeaderBoardReport();
   }
-  
+  addPaginationControls(currentPage, totalPages);
 });
 
-async function loadExpense(){
-  try{
-    const token=localStorage.getItem('token');
+async function loadExpense(page = 1) {
+  try {
+    const token = localStorage.getItem('token');
     const ExpenseList = document.getElementById('Expense-list');
-    const header=document.createElement('h3');
+    
+    // Clear existing content before loading new data
+    ExpenseList.innerHTML = '';
+
+    const header = document.createElement('h3');
     header.appendChild(document.createTextNode('Expenses:'));
     ExpenseList.appendChild(header);
-  await axios.get('http://localhost:3000/showExpense',{ headers:{"Authorization": token}})
-  .then(response=>{
-    response.data.expenses.forEach(element => {
-  const li=document.createElement('li');
-  li.className="list-group-item";
-  li.appendChild(document.createTextNode(`${element.Amount} - ${element.description} -  ${element.category} `));
-  
-  const delButton=document.createElement('button');
-  delButton.textContent='Delete';
-  delButton.className='btn btn-danger';
-  delButton.addEventListener('click', () => deleteExpense(element.id)); 
-  li.appendChild(delButton);
-  ExpenseList.appendChild(li);
- });
-  })
-  // console.log(response);
 
+    const pageSize = 5;
+    const startIndex = (page - 1) * pageSize;
+
+    console.log('startIndex:', startIndex, 'pageSize:', pageSize);
+
+    const response = await axios.get('http://localhost:3000/showExpense', {
+      headers: { "Authorization": token },
+      params: {
+        startIndex,
+        pageSize
+      }
+    });
+
+    console.log('Server Response:', response);
+
+    response.data.expenses.forEach(element => {
+      const li = document.createElement('li');
+      li.className = "list-group-item";
+      li.appendChild(document.createTextNode(`${element.Amount} - ${element.description} -  ${element.category} `));
+
+      const delButton = document.createElement('button');
+      delButton.textContent = 'Delete';
+      delButton.className = 'btn btn-danger';
+      delButton.addEventListener('click', () => deleteExpense(element.id));
+      li.appendChild(delButton);
+      ExpenseList.appendChild(li);
+    });
+
+    // Clear previous pagination controls
+    const paginationContainer = document.getElementById('pagination-container');
+    paginationContainer.innerHTML = '';
+
+    // Add new pagination controls
+    const totalPages = Math.ceil(response.data.totalCount / pageSize);
+    console.log('totalPages:', totalPages);
+    addPaginationControls(page, totalPages);
 
   } catch (error) {
     console.error(error);
   }
 }
+
+
+function addPaginationControls(currentPage, totalPages) {
+  const paginationContainer = document.getElementById('pagination-container');
+  paginationContainer.innerHTML = '';
+
+  const prevButton = createPaginationButton('Previous', currentPage > 1 ? currentPage - 1 : 1);
+  paginationContainer.appendChild(prevButton);
+
+  for (let i = 1; i <= totalPages; i++) {
+    const pageButton = createPaginationButton(String(i), i);
+    paginationContainer.appendChild(pageButton);
+  }
+
+  const nextButton = createPaginationButton('Next', currentPage < totalPages ? currentPage + 1 : totalPages);
+  paginationContainer.appendChild(nextButton);
+}
+
+function createPaginationButton(text, page) {
+  const button = document.createElement('button');
+  button.textContent = text;
+  button.className = 'btn btn-primary';
+  button.addEventListener('click', () => {
+    console.log(`Button clicked for page ${page}`);
+    loadExpense(page);
+  });
+  return button;
+}
+
+// Example usage:
+// Assume currentPage and totalPages are appropriately set.
+addPaginationControls(currentPage, totalPages);
+
+
 async function onSubmit(e){
           e.preventDefault();
           const token = localStorage.getItem('token');
-  const decodeToken=parseJwt(token);
-  const userId=decodeToken.userId;
+          const decodeToken=parseJwt(token);
+          const userId=decodeToken.userId;
           console.log("userID"+userId)
           const addData={
             Amount: e.target.amount.value,
@@ -156,7 +224,9 @@ async function onSubmit(e){
 
     async function deleteExpense(expenseId){
       try{
-        await axios.delete(`http://localhost:3000/delExpense/${expenseId}`);
+        const token = localStorage.getItem('token');
+        const config={ headers:{"Authorization": token}};
+        await axios.delete(`http://localhost:3000/delExpense/${expenseId}`,config);
         const ExpenseList = document.getElementById('Expense-list');
         while (ExpenseList.firstChild) {
             ExpenseList.removeChild(ExpenseList.firstChild);
@@ -165,7 +235,7 @@ async function onSubmit(e){
       
         
       }catch(error){
-        console.error();
+        console.error(error);
       }
     }
     document.getElementById('rzp-button').onclick = async function (e) {
@@ -218,6 +288,8 @@ function ShowLeaderBoard(){
   leaderBoardBtn.value='Show LeaderBoard';
   leaderBoardBtn.className='btn btn-info';
   document.getElementById('BtnSection').appendChild(leaderBoardBtn);
+  
+
   leaderBoardBtn.onclick=async function (e){
     const token=localStorage.getItem('token');
     const LeaderBoard = document.getElementById('leaderBoard');
@@ -229,11 +301,52 @@ function ShowLeaderBoard(){
       response.data.forEach(element => {
       const lbLi=document.createElement('li');
     lbLi.className="list-group-item";
-    lbLi.appendChild(document.createTextNode(`Name:${element.name}  - Total Cost:${element.totalCost}`));
+    lbLi.appendChild(document.createTextNode(`Name:${element.name}  - Total Cost:${element.totalExpenses}`));
     LeaderBoard.appendChild(lbLi);
+
+
       })
     })
   }
+}
+function ShowLeaderBoardReport(){
+  const report=document.createElement('input');
+  report.type='button';
+  report.value='Reports';
+  report.className='btn btn-info';
+  document.getElementById('BtnSection').appendChild(report);
+  report.onclick=async function (e){
+    const token=localStorage.getItem('token');
+    console.log('clicked');
+    await axios.get('http://localhost:3000/premimum/reports',{ headers:{"Authorization": token}})
+    .then(()=>{
+      window.location.href="/premimum/reports";
+    })
+   
+  }
+}
+async function download(){
+  const token=localStorage.getItem('token');
+    await axios.get('http://localhost:3000/download', { headers: {"Authorization" : token} })
+    .then((response) => {
+        if(response.status === 200){
+            //the bcakend is essentially sending a download link
+            //  which if we open in browser, the file would download
+            var a = document.createElement("a");
+            a.href = response.data.fileURL;
+            a.download = 'myexpense.csv';
+            a.click();
+            axios.get('http://localhost:3000/downloadedFile', { headers: {"Authorization" : token} }).then((response)=>{
+              console.log(response)
+            })
+        } else {
+            throw new Error(response.data.message)
+        }
+
+    })
+    .catch((err) => {
+        console.log(err)
+    });
 }
     </script>
 </body>
