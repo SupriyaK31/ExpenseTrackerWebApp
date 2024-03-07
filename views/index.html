@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
           ShowLeaderBoard();
           ShowLeaderBoardReport();
   }
-  addPaginationControls(currentPage, totalPages);
+  // addPaginationControls(currentPage, totalPages);
 });
 
 async function loadExpense(page = 1) {
@@ -123,7 +123,8 @@ async function loadExpense(page = 1) {
 
     const pageSize = 5;
     const startIndex = (page - 1) * pageSize;
-
+    const endIndex=page*pageSize;
+    
     console.log('startIndex:', startIndex, 'pageSize:', pageSize);
 
     const response = await axios.get('http://localhost:3000/showExpense', {
@@ -191,9 +192,7 @@ function createPaginationButton(text, page) {
   return button;
 }
 
-// Example usage:
-// Assume currentPage and totalPages are appropriately set.
-addPaginationControls(currentPage, totalPages);
+
 
 
 async function onSubmit(e){
