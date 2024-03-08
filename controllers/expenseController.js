@@ -111,9 +111,9 @@ const delExpense = async (req, res) => {
 };
 
 function uploadToS3(data,filename){
-    const BUCKET_NAME='supriyaexpensetracker';
-    const IAM_USER_KEY='AKIAZI2LDPW3ABQQ33RL';
-    const IAM_USER_SECRET='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';
+    const BUCKET_NAME='';
+    const IAM_USER_KEY='';
+    const IAM_USER_SECRET='';
 
     let s3bucket=new AWS.S3({
         accessKeyId:IAM_USER_KEY,
